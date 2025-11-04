@@ -1,55 +1,27 @@
-﻿@model List<Product>
-@{
-    ViewBag.Title = "Product Manager";
-}
+﻿@model GuitarShop.Models.ProductsViewModel
 
-<h1>@ViewBag.Title</h1>
 <div class="row">
-    <div class="col-md-2">
-        <ul class="list-group">
+    <div class="col-3">
+        <div class="list-group">
             <a asp-action="List" asp-route-id="All"
-               class="list-group-item
-                @if (ViewBag.SelectedCategoryName == "All") {
-                    <text>active</text>
-                } ">All</a>
-            @foreach (Category c in ViewBag.Categories)
+               class="list-group-item @Model.CheckActiveCategory("All")">All</a>
+
+            @foreach (var c in Model.Categories)
             {
                 <a asp-action="List" asp-route-id="@c.Name"
-                   class="list-group-item
-                         @(ViewBag.SelectedCategoryName == c.Name ? "active" : "")">
-                    @c.Name
-                </a>
+                   class="list-group-item @Model.CheckActiveCategory(c.Name)">@c.Name</a>
             }
-        </ul>
+        </div>
     </div>
 
-    <div class="col-md-10">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th></th>
-                    <th></th>
-            </thead>
-            <tbody>
-                @foreach (var p in Model)
-                {
-                    <tr>
-                        <td>@p.Name</td>
-                        <td>@p.Price.ToString("C")</td>
-                        <td>
-                            <a asp-action="Update"
-                               asp-route-id="@p.ProductID">Update</a>
-                        </td>
-                        <td>
-                            <a asp-action="Delete"
-                               asp-route-id="@p.ProductID">Delete</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-        <a asp-action="Add" class="btn btn-primary">Add New Product</a>
+    <div class="col-9">
+        @foreach (var p in Model.Products)
+        {
+            <div class="border rounded p-2 mb-2">
+                <strong>@p.Name</strong>
+                <span class="text-muted">(@p.Category?.Name)</span>
+                <div>@p.Price.ToString("C")</div>
+            </div>
+        }
     </div>
 </div>

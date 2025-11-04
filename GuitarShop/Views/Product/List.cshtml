@@ -1,55 +1,37 @@
-﻿@model List<Product>
-@{
-    ViewData["Title"] = "Product List";
-}
+﻿@model GuitarShop.Models.ProductsViewModel
 
-<h1>Product List</h1>
 <div class="row">
-    <div class="col-md-2">
+    <div class="col-3">
         <div class="list-group">
-            <a asp-controller="Product" asp-action="List" asp-route-id="All" 
-                class="list-group-item 
-                @(ViewBag.SelectedCategoryName == "All" ? "active" : "")">
+            <a asp-controller="Product" asp-action="List" asp-route-id="All"
+               class="list-group-item @Model.CheckActiveCategory("All")">
                 All
             </a>
-            @foreach (Category c in ViewBag.Categories)
+
+            @foreach (var c in Model.Categories)
             {
-                <a asp-controller="Product" asp-action="List" asp-route-id="@c.Name" 
-                   class="list-group-item
-                         @(ViewBag.SelectedCategoryName == c.Name ? "active" : "")">
+                <a asp-controller="Product" asp-action="List" asp-route-id="@c.Name"
+                   class="list-group-item @Model.CheckActiveCategory(c.Name)">
                     @c.Name
                 </a>
             }
         </div>
     </div>
 
-    <div class="col-md-10">
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th></th>
-                    <th></th>
-            </thead>
-            <tbody>
-                @foreach (var product in Model)
-                {
-                    <tr>
-                        <td>@product.Name</td>
-                        <td>@product.Price.ToString("C")</td>
-                        <td>
-                            <a asp-controller="Product" asp-action="Details"
-                               asp-route-id="@product.ProductID"
-                               asp-route-slug="@product.Slug">View Details</a>
-                        </td>
-                        <td>
-                            <a asp-controller="Cart" asp-action="Add"
-                               asp-route-id="@product.Slug">Add to Cart</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="col-9">
+        @foreach (var p in Model.Products)
+        {
+            <div class="border rounded p-2 mb-3">
+                <strong>@p.Name</strong>
+                <span class="text-muted">(@p.Category?.Name)</span>
+                <div>@p.Price.ToString("C")</div>
+
+                <!-- add-to-cart button to trigger TempData message -->
+                <form asp-controller="Cart" asp-action="Add" method="post" class="mt-1">
+                    <input type="hidden" name="id" value="@p.ProductID" />
+                    <button type="submit" class="btn btn-sm btn-primary">Add to Cart</button>
+                </form>
+            </div>
+        }
     </div>
 </div>

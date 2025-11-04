@@ -1,66 +1,43 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using GuitarShop.Models;
 using Microsoft.AspNetCore.Mvc;
-using GuitarShop.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace GuitarShop.Controllers
 {
     public class ProductController : Controller
     {
-        private ShopContext context;
+        private readonly ShopContext context;
+        public ProductController(ShopContext ctx) => context = ctx;
 
-        public ProductController(ShopContext ctx)
-        {
-            context = ctx;
-        }
-
-        public IActionResult Index()
-        {
-            return RedirectToAction("List");
-        }
-
-        [Route("[controller]s/{id?}")]
+        // /Product/List/{id?}  -> id is the Category.Name, or "All"
         public IActionResult List(string id = "All")
         {
             var categories = context.Categories
-                .OrderBy(c => c.CategoryID).ToList();
+                .AsNoTracking()
+                .OrderBy(c => c.CategoryID)
+                .ToList();
 
-            List<Product> products;
-            if (id == "All")
+            var products = id == "All"
+                ? context.Products
+                         .Include(p => p.Category)
+                         .AsNoTracking()
+                         .OrderBy(p => p.ProductID)
+                         .ToList()
+                : context.Products
+                         .Include(p => p.Category)
+                         .AsNoTracking()
+                         .Where(p => p.Category.Name == id)
+                         .OrderBy(p => p.ProductID)
+                         .ToList();
+
+            var model = new ProductsViewModel
             {
-                products = context.Products
-                    .OrderBy(p => p.ProductID).ToList();
-            }
-            else
-            {
-                products = context.Products
-                    .Where(p => p.Category.Name == id)
-                    .OrderBy(p => p.ProductID).ToList();
-            }
+                Categories = categories,
+                Products = products,
+                SelectedCategory = id
+            };
 
-            // use ViewBag to pass data to view
-            ViewBag.Categories = categories;
-            ViewBag.SelectedCategoryName = id;
-
-            // bind products to view
-            return View(products);
-        }
-
-        public IActionResult Details(int id)
-        {
-            var categories = context.Categories
-                .OrderBy(c => c.CategoryID).ToList();
-
-            Product product = context.Products.Find(id) ?? new Product();
-
-            string imageFilename = product.Code + "_m.png";
-
-            // use ViewBag to pass data to view
-            ViewBag.Categories = categories;
-            ViewBag.ImageFilename = imageFilename;
-
-            // bind product to view
-            return View(product);
+            return View(model);   // Views/Product/List.cshtml
         }
     }
 }
